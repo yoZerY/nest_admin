@@ -3,7 +3,7 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { getToken } from '@/utils/auth'
 import { useUserStore } from '@/stores/userStore'
-
+import { usePermissionStore } from '@/stores/permissionStore'
 NProgress.configure({ showSpinner: false })
 
 const whiteList = ['/login', '/auth-redirect']
@@ -18,12 +18,16 @@ router.beforeEach(async (to, from, next) => {
       NProgress.done()
     } else {
       const userStore = useUserStore()
+      const permissionStore = usePermissionStore()
       const hasRoles = userStore.roles && userStore.roles.length > 0
       if (hasRoles) {
         next()
       } else {
         try {
           await userStore.GetInfo()
+          permissionStore.GenerateRoutes().then((res) => {
+            console.log('res :>> ', res)
+          })
           next()
         } catch (error) {
           next(`/login`)
